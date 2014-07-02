@@ -1,0 +1,58 @@
+kaldi 安装说明
+* 环境要求
+** 操作系统
+Debian，Ubuntu等Unix-like系统，Window上也可以安装但不推荐（有些高级的功能可能不支持）
+** 安装要求的packages
+下面是我在Debian上配置时安装的，如果是在Ubuntu上有些可能已经预安装了。
+1. g++ (gcc-c++ in centos)
+2. subversion 
+3. make
+4. automake
+5. libtool
+6. gfortran
+7. zlib1g-dev
+安装的方法很简单用下面这条命令： 
+
+sudo apt-get install package-name
+
+另外，如果你刚刚安装好操作系统可能需要修改系统的source.list文件。
+1. 首先备份源列表。
+ + $ sudo cp /etc/apt/source.list /etc/apt/source.list.old
+2. 然后用编辑器（如gedit）打开文件
+ + $ sudo gedit /etc/apt/source.list
+3. *important!* 搜索找到相应版本的源，替换文件中的内容，保存文件 
+4. *important!* 刷新列表
+ + $ sudo apt-get update 
+
+* 基本指令介绍
+1. cd :: change dir,改变当前工作目录
+2. man :: manual，查看命令的帮助文档，比方说man cd就是看cd的帮助文档
+	  
+* 安装kaldi
+详细的安装过程可以参考https://kaldi.sourceforge.net/install.html 和下载源文件夹中的INSTALL文件。下面只做简单介绍。
+1. 下载kaldi,kaldi有两个版本可供下载，stable和trunk，因为我们要用到DNN等前沿算法所以下载trunk版本。
+   + $ svn co https://svn.code.sf.net/p/kaldi/code/trunk kaldi-trunk
+
+2. 改变当前工作目录到kaldi-trunk/tools并安装kaldi依赖的库
+   + $ cd path-to-kaldi-trunk/kaldi-trunk/tools
+   + $ make 或着 make -j 4（如果电脑有多核CPU的话，一般都是）
+
+3. 安装 ATLAS库,这是一个代数运算库，安装起来需要花一些时间。首先，因为这个库需要根据系统的配置定制编译，我们要关掉CPU throttling.
+   + $ /usr/bin/cpufreq-selector -g performance
+   + $ ./install\_atlas.sh
+
+4. 改变当前工作目录到kaldi-trunk/src并编译kaldi
+   + $ cd ../src
+   + $ ./configure
+   + $ make depend
+   + $ make -j 4
+5. OK,安装完成，到kaldi-trunk/egs里去跑DEMO吧
+*note：* 
+ + 上面configure失败一般都是因为依赖的库没有安装好，尝试回到第2步，再试一次make -j 4，注意看错误信息，一般都是缺失某种工具造成的。
+ + 如果你的系统沒有cpufreq-selector，试试sudo apt-get install gnome-applets
+* examples
+好了，现在来试试例子吧。Kaldi自带了很多语音数据库的训练脚本，在kaldi-trunk/egs中，如timit，rm等。下面以rm为例
++ $ cd ../egs/rm/s4
++ $ ./getdata.sh
++ $ ./run.sh
+其他可以下载到数据库的例子还有timit,voxforge 

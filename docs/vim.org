@@ -1,0 +1,6 @@
+'. :: jump to the last modified line
+:bp :: previous buffer
+:bn :: next buffer
+:bn(n is a number) :: move to n'th buffer
+:ls :: list buffers
+:b<filename-part> with tab-key providing auto-completion
