@@ -1,0 +1,8 @@
+* make repository
+svnadmin create /var/svn/newrepos
+
+* import existing project
+svn import myproject file:///var/svn/newrepos/some/project -m "Initial import" 
+
+* check out
+svn co file:///var/svn/newrepos/some/project
