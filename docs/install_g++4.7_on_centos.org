@@ -1,0 +1,15 @@
+Tru Huynh of centos.org has built the redhat developer toolset 1.1, for centos and it contains gcc 4.7.2
+
+So you could simply use his repo and install just gcc, instantly.
+
+*cd /etc/yum.repos.d*
+*wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo* 
+*yum --enablerepo=testing-1.1-devtools-6 install devtoolset-1.1-gcc devtoolset-1.1-gcc-c++*
+
+This will install it most likely into /opt/centos/devtoolset-1.1/root/usr/bin/
+
+Then you can tell your compile process to use the gcc 4.7 instead of 4.4 with the CC variable
+
+*export CC=/opt/centos/devtoolset-1.1/root/usr/bin/gcc*  
+*export CPP=/opt/centos/devtoolset-1.1/root/usr/bin/cpp*
+*export CXX=/opt/centos/devtoolset-1.1/root/usr/bin/c++*
