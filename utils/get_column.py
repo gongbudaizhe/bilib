@@ -13,14 +13,13 @@ import sys
 import argparse
 
 #sys.path.append(your_library_here)
-
 def convert_string_to_number(string):
     try:
         return int(string)
     except ValueError:
         return float(string)
 
-def parse_columns_input(columns,col_num):
+def parse_columns_input(columns, col_num):
     parts = columns.split(":")
     if len(parts) > 3:
         raise Exception("wrong column syntax")
@@ -46,7 +45,7 @@ def parse_columns_input(columns,col_num):
         return range(start, stop)
     elif len(parts) == 1:
         pos = convert_string_to_number(parts[0])
-        if col_num  > pos:
+        if col_num > pos:
             return [pos]
         else:
             return []
@@ -54,7 +53,7 @@ def parse_columns_input(columns,col_num):
         raise Exception("Empty columns")
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help = 'specify input file')
     parser.add_argument('columns', help = 'the columns needed')
