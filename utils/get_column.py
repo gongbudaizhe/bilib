@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2014 bily <bily@mclab>
+# Copyright © 2014 bily     Huazhong University of Science and technology
 #
 # Distributed under terms of the MIT license.
 
@@ -25,18 +25,23 @@ def parse_columns_input(columns,col_num):
     if len(parts) > 3:
         raise Exception("wrong column syntax")
     elif len(parts) == 3:
+        # e.g. 1:2:7
         start = convert_string_to_number(parts[0])
         step = convert_string_to_number(parts[1])
         stop = min(convert_string_to_number(parts[2]), col_num)
         return range(start, stop, step)
     elif len(parts) == 2:
         if parts[0]:
+            # e.g. 2:7
             start = convert_string_to_number(parts[0])
         else:
+            # e.g. :7
             start = 0
         if parts[1]:
+            # e.g. 2:7
             stop = min(convert_string_to_number(parts[1]), col_num)
         else:
+            # e.g. 2:
             stop = col_num
         return range(start, stop)
     elif len(parts) == 1:
@@ -66,8 +71,6 @@ if __name__=="__main__":
 
     lines = file_input.readlines()
 
-    
-    new_lines = []
     for line in lines:
         line = line.strip()
         line_parts = line.split(separator)
@@ -79,9 +82,9 @@ if __name__=="__main__":
         for pos in column_index:
             new_line += (line_parts[pos] + separator)
         new_line += "\n"
-        new_lines.append(new_line)
 
-    sys.stdout.writelines(new_lines)
+        sys.stdout.write(new_line)
+
 
     if filename != "-":
         file_input.close()

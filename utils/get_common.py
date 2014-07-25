@@ -17,9 +17,13 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('ref', help = 'reference file')
-    parser.add_argument('test', help = 'comparison file')
-    parser.add_argument('--col', type = int, help = 'compare the #col column of two file\ncompare the whole line if not set',default=-1)
+    parser.add_argument('ref', help='reference file')
+    parser.add_argument('test', help='comparison file')
+    parser.add_argument('--col', type=int, help="compare the #col column of two file\ncompare the whole line if not"
+                                                " set", default=-1)
+    parser.add_argument('--complement', type=bool, help="write complement lines into standard output in stead of "
+                                                        "common lines",
+                        default=False)
     args = parser.parse_args()
 
     ref_path = args.ref
@@ -51,8 +55,8 @@ if __name__ == "__main__":
                 if key in ref:
                     common.append(line)
                 else:
-                    uncommon.append(line + "\n")
-            sys.stdout.writelines(common) 
-            #with open("uncommon", "w") as f_out:
-                #f_out.writelines(uncommon)
-            #print len(common)
+                    uncommon.append(line)
+            if args.complement:
+                sys.stdout.writelines(uncommon)
+            else:
+                sys.stdout.writelines(common)
