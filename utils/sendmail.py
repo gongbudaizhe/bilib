@@ -13,6 +13,8 @@ Feature:
 usage:
     1. prepare an email acount that provides smtp service(like qq or gmail)
     2. store the password in a text file, the password should be encoded by base64.b64encode function
+      import base64
+      base64.b64encode("password")
     3. you can modify the default value of the sender, recipient and the password file location
     3. send the email
       a. with default sender and recipient
