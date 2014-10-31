@@ -61,19 +61,19 @@ send(){
 }
 
 clean_up(){
-    #send "${program}: all work is done ^_^" 
-    echo "${program}: all work is done ^_^" 
+    send "${program}: all work is done ^_^" 
+    #echo "${program}: all work is done ^_^" 
 }
 
 terminated(){
     # we need to unset the EXIT trap otherwise it will also be triggered
     trap - EXIT
-    #send "${program}: terminated!!!"
-    echo "${program}: terminated!!!"
+    send "${program}: terminated!!!"
+    #echo "${program}: terminated!!!"
 }
 error(){
     trap - EXIT
-    #send "${program}: error occured!!!"
-    echo "${program}: error occured!!!"
+    send "${program}: error occured!!!"
+    #echo "${program}: error occured!!!"
 
 }
