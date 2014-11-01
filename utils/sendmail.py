@@ -47,7 +47,7 @@ from email.mime.base import MIMEBase
 from email.MIMEText import MIMEText
 
 def parse_email_address(email_address):
-    print "parsing the email address to get the smtp server..."
+    sys.stderr.write("parsing the email address to get the smtp server...\n")
     parts = email_address.split("@")
     if len(parts) != 2:
         # it should have the pattern of XXXX@XXXX.XXXX
@@ -61,7 +61,7 @@ def parse_email_address(email_address):
     elif server_name == "qq":
         SMTP_SERVER = "smtp.qq.com"
     else:
-        print "the server is not defined, you should add it in the code"
+        sys.stderr.write( "the server is not defined, you should add it in the code\n")
     sys.stderr.write("the server is: " + SMTP_SERVER + "\n")
     return SMTP_SERVER
 
