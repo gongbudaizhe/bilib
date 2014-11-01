@@ -45,7 +45,8 @@ trap "clean_up" EXIT
 trap "terminated" INT TERM
 trap "error" ERR
 
-program=$1
+program=$0
+recipient=$1
 attachment=$2
 
 if [ -z $program ];then
@@ -53,27 +54,25 @@ if [ -z $program ];then
 fi
 
 send(){
-    if [ -z $attachmen ];then
-        sendmail.py "$1"
+    if [ -z $attachment ];then
+        sendmail.py -t "$recipient" "$1"
+        #echo $1
     else
-        sendmail.py -a $attachment "$1" 
+        sendmail.py -t "$recipient" -a "$attachment" "$1" 
+        #echo $1
     fi
 }
 
 clean_up(){
     send "${program}: all work is done ^_^" 
-    #echo "${program}: all work is done ^_^" 
 }
 
 terminated(){
     # we need to unset the EXIT trap otherwise it will also be triggered
     trap - EXIT
     send "${program}: terminated!!!"
-    #echo "${program}: terminated!!!"
 }
 error(){
     trap - EXIT
     send "${program}: error occured!!!"
-    #echo "${program}: error occured!!!"
-
 }

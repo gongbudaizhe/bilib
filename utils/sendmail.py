@@ -62,7 +62,7 @@ def parse_email_address(email_address):
         SMTP_SERVER = "smtp.qq.com"
     else:
         print "the server is not defined, you should add it in the code"
-    print "the server is: " + SMTP_SERVER
+    sys.stderr.write("the server is: " + SMTP_SERVER + "\n")
     return SMTP_SERVER
 
 def parse_attachment(path):
@@ -121,13 +121,13 @@ def main():
     SMTP_PORT = 587
 
     sender = args.sender
-    print "the sender is: " + sender
+    sys.stderr.write("the sender is: " + sender + "\n")
 
     import base64 # the password is base64 encoded
     password = base64.b64decode(open(args.password_from_file).read())
 
     recipient = args.to
-    print "the recipient is: " + recipient
+    sys.stderr.write("the recipient is: " + recipient + "\n")
 
     subject = args.subject
     attachment = args.attach
@@ -144,14 +144,15 @@ def main():
     msg.attach(body)
     
     if attachment:
-        print "Adding attachment..."
+        sys.stderr.write("Adding attachment..." + "\n")
         msgq = parse_attachment(attachment)
         msg.attach(msgq)
     
     # Now send or store the message
     qwertyuiop = msg.as_string()
     
-    print "Connecting to server..." 
+    sys.stderr.write("Connecting to server..." + "\n")
+    
     session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
  
     session.ehlo()
@@ -161,7 +162,7 @@ def main():
     session.login(sender, password)
  
     session.sendmail(sender, recipient, qwertyuiop)
-    
+ 
     session.quit()
     os.system('notify-send "Email sent"')
  
