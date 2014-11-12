@@ -3,7 +3,7 @@
 # sendmail.sh
 # A shell wrapper of sendmail.py
 #
-# Copyright (C) 2014 bily <gongbudaizhe@gmail.com>
+# Copyright (C) 2014 bily <bily.lee@qq.com>
 #
 # Distributed under terms of the MIT license.
 #
