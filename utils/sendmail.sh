@@ -41,9 +41,9 @@ fi
 #       exit command or by a command failing when using set -e
 # 
 # Reference: http://www.davidpashley.com/articles/writing-robust-shell-scripts/
-trap "clean_up" EXIT
 trap "terminated" INT TERM
 trap "error" ERR
+trap "clean_up" EXIT
 
 program=$0
 recipient=$1
@@ -65,14 +65,17 @@ send(){
 
 clean_up(){
     send "${program}: all work is done ^_^" 
+    exit 0
 }
 
 terminated(){
     # we need to unset the EXIT trap otherwise it will also be triggered
     trap - EXIT
     send "${program}: terminated!!!"
+    exit -1
 }
 error(){
     trap - EXIT
     send "${program}: error occured!!!"
+    exit -2
 }

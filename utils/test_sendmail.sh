@@ -5,15 +5,14 @@
 #
 # Distributed under terms of the MIT license.
 #
-
 #######################################
 # CASE 1
 # fails with attachment 
 #######################################
 
-# you can even pass parameters to sourced script, which is,
-# astonishing!!!
-. ./sendmail.sh bily.lee@qq.com sendmail.sh
+## you can even pass parameters to sourced script, which is,
+## astonishing!!!
+#. ./sendmail.sh bily.lee@qq.com sendmail.sh
 
 
 #######################################
@@ -31,4 +30,19 @@
 #######################################
 
 #. ./sendmail.sh bily.lee@qq.com
+
+#######################################
+# CASE 4
+# Interrupt
+#######################################
+
+. ./sendmail.sh bily.lee@qq.com
+
+# use Ctrl+C to jump out the loop
+x=0
+while true;
+do
+    x=1     
+done
+
 
