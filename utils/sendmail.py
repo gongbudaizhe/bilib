@@ -3,7 +3,10 @@
 send email using smtp
 
 default:
-    sent email from bily.hust@gmail.com to bily.lee@qq.com without attachment
+    sent email from mclab_speech@qq.com to bily.lee@qq.com without attachment
+
+TODO:
+    1. maybe try to send formatted html could be a good idea
 
 Feature:
     * support pipe or redirection as long as you put a dash('-') as placeholder for message
@@ -18,11 +21,11 @@ usage:
     3. you can modify the default value of the sender, recipient and the password file location
     3. send the email
       a. with default sender and recipient
-        ./sendmail "greetings!"
+        ./sendmail.py "greetings!"
       b. with the specified sender and recipient
-        ./sendmail -s bily.hust@gmail.com -p /home/bily/mail.password -t bily.lee@qq.com "message body"
+        ./sendmail.py -se mclab_speech@qq.com -p /etc/mail.password -t bily.lee@qq.com "message body"
       c. with attachment
-        ./sendmail -a sendmail "attached with the sendmail script"
+        ./sendmail.py -a sendmail "attached with the sendmail script"
 
 """
 import os, re
@@ -112,8 +115,8 @@ def main():
     parser.add_argument("-su", "--subject", help = "email's subject")
     parser.add_argument("-a", "--attach", help = "the path of the email's attachment")
     parser.add_argument("-sm", "--server", help = "smtp server, e.g. smtp.gmail.com", default = None)
-    parser.add_argument("-se", "--sender", help = "default:mclab_speech@163.com", default = "bily.hust@gmail.com")
-    parser.add_argument("-p", "--password-from-file", default = "/home/bily/mail.password")
+    parser.add_argument("-se", "--sender", help = "default:mclab_speech@163.com", default = "mclab_speech@qq.com")
+    parser.add_argument("-p", "--password-from-file", default = "/etc/mail.password")
     args = parser.parse_args()
 
     SMTP_SERVER = args.server or parse_email_address(args.sender)
@@ -141,6 +144,7 @@ def main():
     
     body = MIMEText('text', "plain")
     body.set_payload(message)
+
     msg.attach(body)
     
     if attachment:
