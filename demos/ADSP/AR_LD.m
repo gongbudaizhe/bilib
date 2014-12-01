@@ -38,6 +38,10 @@ function [A, S, G] = AR_LD(R, p)
 % Copyright (C) 2014 bily Huazhong Unversity of Science and Technology
 % Distributed under terms of the MIT license.
 
+if isrow(R) || iscolumn(R)
+    R = toeplitz(R);
+end
+
 % Initialization
 S = zeros(p + 1, 1); % history of noise variance 
 A = zeros(p + 1); % history of filter coefficent a
