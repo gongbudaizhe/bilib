@@ -25,12 +25,12 @@ if __name__ == "__main__":
     sys.stderr.write("len(words): " + str(len(words)) + "\n")
     n_words = len(words)
 
-    word_ref = {}
-    word_len = len(words[0])
-
     ############################################################################
     # Create word reference
     ############################################################################
+    word_ref = {}
+    word_len = len(words[0])
+
     for word in words:
         for i in xrange(word_len):
             char = word[i]
@@ -39,14 +39,23 @@ if __name__ == "__main__":
             word_ref[char][i].add(word)
     sys.stderr.write("Word Reference Made...\n")
 
+    len_ref = {}
+    for (key, value) in word_ref.iteritems():
+        len_ref[key] = [len(ws) for ws in value]
+
     ############################################################################
     # Stage machine
     ############################################################################
     stages = word_len + 1
     stage = 0
+    progress = 0
     matrix = [None for i in xrange(stages)]
     iters = [None for i in xrange(stages)]
-    progress = 0
+
+    first_sucess_words = {}
+    for word in words:
+        first_sucess_words[word] = None
+
     while True:
         if stage == 0:
             # stage one: choose any word as the first row word,
@@ -54,7 +63,7 @@ if __name__ == "__main__":
             if not iters[stage]:
                 iters[stage] = iter(words)
 
-            # Get word and update matrix
+            # Get word
             try:
                 # Show progress
                 progress += 1
@@ -62,10 +71,21 @@ if __name__ == "__main__":
                 sys.stderr.flush()
 
                 word = iters[stage].next()
-                matrix[stage] = word
+
+                last_word = matrix[stage]
+                if last_word and not first_sucess_words[last_word]:
+                    first_sucess_words[last_word] = False
             except StopIteration as e:
                 break
 
+            # Constraint
+            # each char of the choosen word must apears
+            # in the first position of at least one word
+            for i in xrange(word_len):
+                if len_ref[word[i]][0] == 0:
+                    continue
+
+            matrix[stage] = word
             stage += 1
 
         for i in xrange(1, stages-1):
@@ -81,7 +101,6 @@ if __name__ == "__main__":
                 # Get word and update matrix
                 try:
                     word = iters[stage].next()
-                    matrix[stage] = word
                 except StopIteration as e:
                     matrix[stage] = None
                     iters[stage] = None
@@ -91,6 +110,22 @@ if __name__ == "__main__":
                     # Here we use "continue" for consistency
                     continue
 
+                # Constraint
+                # If the word never succeeds as word_1, it won't succeeds as
+                # word_2 either.
+                if stage == 1:
+                    if first_sucess_words[word] is not None:
+                        continue
+                # we don't want repetition
+                if word in matrix:
+                    continue
+                # each char of the choosen word must apears
+                # in the (stage)th position of at least one word
+                for j in xrange(word_len):
+                    if len_ref[word[j]][stage-1] == 0:
+                        continue
+
+                matrix[stage] = word
                 stage += 1
 
         if stage == stages - 1:
@@ -102,7 +137,6 @@ if __name__ == "__main__":
             # Get word and update matrix
             try:
                 word = iters[stage].next()
-                matrix[stage] = word
             except StopIteration as e:
                 matrix[stage] = None
                 iters[stage] = None
@@ -112,14 +146,24 @@ if __name__ == "__main__":
                 # Here we use "continue" for consistency
                 continue
 
+            if word in matrix:
+                continue
+            for j in xrange(word_len):
+                if len_ref[word[j]][stage-1] == 0:
+                    continue
+
+            matrix[stage] = word
+
             # constraints
             satisfied = True
             for i in xrange(1, word_len):
                 word_t = "".join([w[i] for w in matrix[1:]])
-                if word_t not in word_ref[matrix[-1][i]][word_len-1]:
+                if word_t in matrix or \
+                        word_t not in word_ref[matrix[-1][i]][word_len-1]:
                     satisfied = False
                     break
             if satisfied:
+                first_sucess_words[matrix[0]] = True
                 # print the matrix
                 sys.stdout.write(":".join([x.encode('utf-8') for x in matrix]))
                 sys.stdout.write("\n")
