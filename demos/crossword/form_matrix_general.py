@@ -6,16 +6,42 @@
 # Distributed under terms of the MIT license.
 
 """
-
+Forming a Crossword puzzle
+note that you need stackless python to save the state since we need to pickle
+iterators
 """
 
 import sys
+import pickle
+import argparse
+import signal
+
+class State:
+    def __init__(self):
+        pass
+s = State()
+
+def sigint_handler(signum, frame):
+    sys.stderr.write("Storing state in state.pickle...")
+    with open('state.pickle', 'w') as f:
+        pickle.dump(s, f)
+    exit(0)
+
+signal.signal(signal.SIGINT, sigint_handler)
+
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    # positional argument
+    parser.add_argument('words', help='specify words file')
+    # optional argument
+    parser.add_argument('-s', '--state', help='specify state file')
+    args = parser.parse_args()
+
     ############################################################################
     # Load words
     ############################################################################
-    wordfile = sys.argv[1]
+    wordfile = args.words
     words = []
     with open(wordfile) as f:
         for line in f:
@@ -39,6 +65,7 @@ if __name__ == "__main__":
             word_ref[char][i].add(word)
     sys.stderr.write("Word Reference Made...\n")
 
+    # Store len so that we don't have to compute it every time
     len_ref = {}
     for (key, value) in word_ref.iteritems():
         len_ref[key] = [len(ws) for ws in value]
@@ -46,35 +73,41 @@ if __name__ == "__main__":
     ############################################################################
     # Stage machine
     ############################################################################
-    stages = word_len + 1
-    stage = 0
-    progress = 0
-    matrix = [None for i in xrange(stages)]
-    iters = [None for i in xrange(stages)]
-
-    first_sucess_words = {}
-    for word in words:
-        first_sucess_words[word] = None
+    if args.state:
+        with open(args.state) as f:
+            s = pickle.load(f)
+    else:
+        s.stages = word_len + 1
+        s.stage = 0
+        s.progress = 0
+        s.matrix = [None for i in xrange(s.stages)]
+        s.iters = [None for i in xrange(s.stages)]
+        s.sucess_matrixs = []
+        first_sucess_words = {}
+        for word in words:
+            first_sucess_words[word] = None
+        s.first_sucess_words = first_sucess_words
 
     while True:
-        if stage == 0:
+
+        if s.stage == 0:
             # stage one: choose any word as the first row word,
             #            denote this word as word_1
-            if not iters[stage]:
-                iters[stage] = iter(words)
+            if not s.iters[s.stage]:
+                s.iters[s.stage] = iter(words)
 
             # Get word
             try:
                 # Show progress
-                progress += 1
-                sys.stderr.write("Progress: %d/%d\r" % (progress, n_words))
+                s.progress += 1
+                sys.stderr.write("Progress: %d/%d\r" % (s.progress, n_words))
                 sys.stderr.flush()
 
-                word = iters[stage].next()
+                word = s.iters[s.stage].next()
 
-                last_word = matrix[stage]
-                if last_word and not first_sucess_words[last_word]:
-                    first_sucess_words[last_word] = False
+                last_word = s.matrix[s.stage]
+                if last_word and not s.first_sucess_words[last_word]:
+                    s.first_sucess_words[last_word] = False
             except StopIteration as e:
                 break
 
@@ -85,26 +118,26 @@ if __name__ == "__main__":
                 if len_ref[word[i]][0] == 0:
                     continue
 
-            matrix[stage] = word
-            stage += 1
+            s.matrix[s.stage] = word
+            s.stage += 1
 
-        for i in xrange(1, stages-1):
-            if stage == i:
+        for i in xrange(1, s.stages-1):
+            if s.stage == i:
                 # stage two: choose any word except word_1 such that it has
                 #            the same first char as the word_1,
                 #            denoted as word_2
 
-                char = matrix[0][i-1]
-                if not iters[stage]:
-                    iters[stage] = iter(word_ref[char][0])
+                char = s.matrix[0][i-1]
+                if not s.iters[s.stage]:
+                    s.iters[s.stage] = iter(word_ref[char][0])
 
                 # Get word and update matrix
                 try:
-                    word = iters[stage].next()
+                    word = s.iters[s.stage].next()
                 except StopIteration as e:
-                    matrix[stage] = None
-                    iters[stage] = None
-                    stage -= 1
+                    s.matrix[s.stage] = None
+                    s.iters[s.stage] = None
+                    s.stage -= 1
                     # You can "break" the for loop, since there is no point
                     # to try bigger stages.
                     # Here we use "continue" for consistency
@@ -113,57 +146,58 @@ if __name__ == "__main__":
                 # Constraint
                 # If the word never succeeds as word_1, it won't succeeds as
                 # word_2 either.
-                if stage == 1:
-                    if first_sucess_words[word] is not None:
+                if s.stage == 1:
+                    if s.first_sucess_words[word] is not None:
                         continue
                 # we don't want repetition
-                if word in matrix:
+                if word in s.matrix:
                     continue
                 # each char of the choosen word must apears
                 # in the (stage)th position of at least one word
                 for j in xrange(word_len):
-                    if len_ref[word[j]][stage-1] == 0:
+                    if len_ref[word[j]][s.stage-1] == 0:
                         continue
 
-                matrix[stage] = word
-                stage += 1
+                s.matrix[s.stage] = word
+                s.stage += 1
 
-        if stage == stages - 1:
+        if s.stage == s.stages - 1:
             # final stage: this is where we have most constraints
-            char = matrix[0][stage-1]
-            if not iters[stage]:
-                iters[stage] = iter(word_ref[char][0])
+            char = s.matrix[0][s.stage-1]
+            if not s.iters[s.stage]:
+                s.iters[s.stage] = iter(word_ref[char][0])
 
             # Get word and update matrix
             try:
-                word = iters[stage].next()
+                word = s.iters[s.stage].next()
             except StopIteration as e:
-                matrix[stage] = None
-                iters[stage] = None
-                stage -= 1
+                s.matrix[s.stage] = None
+                s.iters[s.stage] = None
+                s.stage -= 1
                 # You can "break" the for loop, since there is no point
                 # to try bigger stages.
                 # Here we use "continue" for consistency
                 continue
 
-            if word in matrix:
+            if word in s.matrix:
                 continue
             for j in xrange(word_len):
-                if len_ref[word[j]][stage-1] == 0:
+                if len_ref[word[j]][s.stage-1] == 0:
                     continue
 
-            matrix[stage] = word
+            s.matrix[s.stage] = word
 
             # constraints
             satisfied = True
             for i in xrange(1, word_len):
-                word_t = "".join([w[i] for w in matrix[1:]])
-                if word_t in matrix or \
-                        word_t not in word_ref[matrix[-1][i]][word_len-1]:
+                word_t = "".join([w[i] for w in s.matrix[1:]])
+                if word_t in s.matrix or \
+                        word_t not in word_ref[s.matrix[-1][i]][word_len-1]:
                     satisfied = False
                     break
             if satisfied:
-                first_sucess_words[matrix[0]] = True
+                s.first_sucess_words[s.matrix[0]] = True
                 # print the matrix
-                sys.stdout.write(":".join([x.encode('utf-8') for x in matrix]))
+                s.sucess_matrixs.append(s.matrix)
+                sys.stdout.write(":".join([x.encode('utf-8') for x in s.matrix]))
                 sys.stdout.write("\n")
