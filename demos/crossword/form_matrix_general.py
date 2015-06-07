@@ -54,10 +54,11 @@ if __name__ == "__main__":
     ############################################################################
     # Create word reference
     ############################################################################
-    word_ref = {}
     word_len = len(words[0])
 
+    word_ref = {}
     for word in words:
+        # one char ref
         for i in xrange(word_len):
             char = word[i]
             if char not in word_ref:
@@ -65,10 +66,22 @@ if __name__ == "__main__":
             word_ref[char][i].add(word)
     sys.stderr.write("Word Reference Made...\n")
 
+    multichar_ref = {}
+    for word in words:
+        if word_len > 2:
+            # multiple char ref
+            for i in xrange(1, word_len):
+                char = word[0:i]
+                if char not in multichar_ref:
+                    multichar_ref[char] = set()
+                multichar_ref[char].add(word)
+    sys.stderr.write("Multichar Reference Made...\n")
+
     # Store len so that we don't have to compute it every time
     len_ref = {}
     for (key, value) in word_ref.iteritems():
         len_ref[key] = [len(ws) for ws in value]
+    sys.stderr.write("Length Reference Made...\n")
 
     ############################################################################
     # Stage machine
@@ -76,6 +89,7 @@ if __name__ == "__main__":
     if args.state:
         with open(args.state) as f:
             s = pickle.load(f)
+        sys.stderr.write("Loading state: %s...\n" % (args.state))
     else:
         s.stages = word_len + 1
         s.stage = 0
@@ -152,13 +166,21 @@ if __name__ == "__main__":
                 # we don't want repetition
                 if word in s.matrix:
                     continue
-                # each char of the choosen word must apears
-                # in the (stage)th position of at least one word
-                for j in xrange(word_len):
-                    if len_ref[word[j]][s.stage-1] == 0:
-                        continue
 
                 s.matrix[s.stage] = word
+
+                # More tight constraints, it can speed up A LOT !!!
+                satisfied = True
+                for j in xrange(1, word_len):
+                    word_t = "".join([w[j] for w in s.matrix[1:s.stage+1]])
+                    try:
+                        multichar_ref[word_t]
+                    except KeyError as e:
+                        satisfied = False
+
+                if not satisfied:
+                    continue
+
                 s.stage += 1
 
         if s.stage == s.stages - 1:
